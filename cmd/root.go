@@ -14,10 +14,14 @@ var (
 	cfgFile     string
 	userLicense string
 
+	// This represents the base command when called
+	// without any subcommands
+
 	rootCmd = &cobra.Command{
-		Use:   "Coretabs-cli",
-		Short: "A simple cli to learn Golang",
-		Long:  `Coretabs-cli is a CLI library for Go that belong to Coretabs Academy.`,
+		Use:   "coretabs",
+		Short: "We generate your project ",
+		Long: `Coretabs-cli will generate front-end, back-end projects, and both for you.
+You just have to focus on code :p`,
 	}
 )
 
@@ -38,7 +42,6 @@ func init() {
 	viper.SetDefault("author", "NAME HERE <EMAIL ADDRESS>")
 	viper.SetDefault("license", "apache")
 
-	rootCmd.AddCommand(versionCmd)
 }
 
 func er(msg interface{}) {

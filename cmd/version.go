@@ -12,8 +12,8 @@ func init() {
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Coretabs-cli V 0.0.0",
-	Long:  `Coretabs-cli V 0.0.0`,
+	Short: "Print version information and quit",
+	Long:  `Print version information and quit`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("V 0.0")
 	},
