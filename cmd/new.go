@@ -13,8 +13,10 @@ func init() {
 }
 
 func djangoVue() {
-	var repo string = "https://github.com/yaseralnajjar/django-vue-template"
+	repo := "https://github.com/yaseralnajjar/django-vue-template"
+
 	command := exec.Command("git", "clone", repo)
+
 	command.Stdout = os.Stdout
 	command.Stderr = os.Stderr
 
@@ -23,6 +25,17 @@ func djangoVue() {
 		log.Fatal("Error:", err)
 	}
 
+}
+
+func setProjectName(args []string) {
+	if len(args) != 2 {
+		log.Fatal("new command can be only with two args")
+	}
+
+	err := os.Rename("django-vue-template", args[1])
+	if err != nil {
+		log.Fatal("Error:", err)
+	}
 }
 
 var newCmd = &cobra.Command{
@@ -35,7 +48,17 @@ var newCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		djangoVue()
+		switch args[0] {
+		case "fullstack":
+			switch len(args) {
+			case 1:
+				djangoVue()
+			case 2:
+				djangoVue()
+				setProjectName(args)
+			}
+
+		}
 
 	},
 }
