@@ -63,18 +63,37 @@ func changeDirectory(dir string) error {
 
 func installRequirments() error {
 	fmt.Println("starting virtual env ....")
-	command := exec.Command("bash", "-c",
-		"yarn install; yarn build; pip3 install virtualenv; virtualenv venv; source venv/bin/activate; pip3 install -r requirements.txt; python3 manage.py migrate")
-
+	commandAPI := exec.Command("bash", "-c",
+		"pip3 install virtualenv; virtualenv venv; source venv/bin/activate; pip3 install -r requirements.txt; python3 manage.py migrate")
+	commandSPA := exec.Command("bash", "-c",
+		"yarn install; yarn build")
 	// command := exec.Command("pip3", "install", "requirements.txt")
 
-	command.Stdout = os.Stdout
-	command.Stderr = os.Stderr
+	commandSPA.Stdout = os.Stdout
+	commandSPA.Stderr = os.Stderr
 
-	err := command.Run()
+	commandAPI.Stdout = os.Stdout
+	commandAPI.Stderr = os.Stderr
+	if err := commandAPI.Start(); err != nil {
+		log.Fatal("Error:", err)
+	}
+
+	if err := commandSPA.Start(); err != nil {
+		log.Fatal("Error:", err)
+	}
+
+	err := commandAPI.Wait()
 	if err != nil {
 		log.Fatal("Error:", err)
 	}
+	err = commandSPA.Wait()
+	if err != nil {
+		log.Fatal("Error:", err)
+	}
+	// err := command.Run()
+	// if err != nil {
+	// 	log.Fatal("Error:", err)
+	// }
 	return nil
 
 }
