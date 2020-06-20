@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"log"
@@ -15,11 +16,17 @@ const (
 )
 
 var (
-	pathsNeeded = []string{"git", "pip3", "yarn"}
+	pathsNeeded = []string{"git", "pip3"}
 )
 
 func init() {
 	rootCmd.AddCommand(newCmd)
+}
+
+func must(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func checkPaths() (map[string]error, error) {
@@ -61,39 +68,37 @@ func changeDirectory(dir string) error {
 	return nil
 }
 
-func installRequirments() error {
+func installRequirments(packageManager string) error {
 	fmt.Println("starting virtual env ....")
-	commandAPI := exec.Command("bash", "-c",
-		"pip3 install virtualenv; virtualenv venv; source venv/bin/activate; pip3 install -r requirements.txt; python3 manage.py migrate")
-	commandSPA := exec.Command("bash", "-c",
-		"yarn install; yarn build")
-	// command := exec.Command("pip3", "install", "requirements.txt")
 
-	commandSPA.Stdout = os.Stdout
-	commandSPA.Stderr = os.Stderr
+	frontCmd := fmt.Sprintf("%v install; %v run build", packageManager, packageManager)
+	backCmd := fmt.Sprint("python3 -m venv venv; source venv/bin/activate; pip install -r requirements.txt; python manage.py migrate")
 
-	commandAPI.Stdout = os.Stdout
-	commandAPI.Stderr = os.Stderr
-	if err := commandAPI.Start(); err != nil {
+	execBackCmd := exec.Command("bash", "-c", backCmd)
+	execFrontCmd := exec.Command("bash", "-c", frontCmd)
+
+	execFrontCmd.Stdout = os.Stdout
+	execFrontCmd.Stderr = os.Stderr
+
+	execBackCmd.Stdout = os.Stdout
+	execBackCmd.Stderr = os.Stderr
+	if err := execBackCmd.Start(); err != nil {
 		log.Fatal("Error:", err)
 	}
 
-	if err := commandSPA.Start(); err != nil {
+	if err := execFrontCmd.Start(); err != nil {
 		log.Fatal("Error:", err)
 	}
 
-	err := commandAPI.Wait()
+	err := execBackCmd.Wait()
 	if err != nil {
 		log.Fatal("Error:", err)
 	}
-	err = commandSPA.Wait()
+	err = execFrontCmd.Wait()
 	if err != nil {
 		log.Fatal("Error:", err)
 	}
-	// err := command.Run()
-	// if err != nil {
-	// 	log.Fatal("Error:", err)
-	// }
+
 	return nil
 
 }
@@ -112,18 +117,21 @@ var newCmd = &cobra.Command{
 			return
 		}
 		var projectName string
-		// var projectType string
 		fmt.Print("Project Name: ")
 		if _, err := fmt.Scanf("%s", &projectName); err != nil {
 			fmt.Printf("%s\n", err)
 			return
 		}
-		// fmt.Print("Project Type: ")
+		fmt.Print("What package manager you want to use?\nyarn or npm (default yarn): ")
 
-		// if _, err := fmt.Scanf("%s", &projectType); err != nil {
-		// 	fmt.Printf("%s\n", err)
-		// 	return
-		// }
+		var packageManager string
+
+		reader := bufio.NewReader(os.Stdin)
+		packageManager, _ = reader.ReadString('\n')
+
+		if packageManager != "npm" {
+			packageManager = "yarn"
+		}
 
 		err = cloneProject(projectName)
 		if err != nil {
@@ -131,7 +139,10 @@ var newCmd = &cobra.Command{
 		}
 
 		err = changeDirectory(projectName)
-		err = installRequirments()
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = installRequirments(packageManager)
 
 	},
 }
