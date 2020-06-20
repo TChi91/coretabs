@@ -52,19 +52,14 @@ func cloneProject(projectName string) error {
 	command.Stderr = os.Stderr
 
 	err := command.Run()
-	if err != nil {
-		log.Fatal("Error:", err)
-	}
+	must(err)
 	return nil
 
 }
 
 func changeDirectory(dir string) error {
 	err := os.Chdir(dir)
-
-	if err != nil {
-		log.Fatal("Error:", err)
-	}
+	must(err)
 	return nil
 }
 
@@ -82,22 +77,14 @@ func installRequirments(packageManager string) error {
 
 	execBackCmd.Stdout = os.Stdout
 	execBackCmd.Stderr = os.Stderr
-	if err := execBackCmd.Start(); err != nil {
-		log.Fatal("Error:", err)
-	}
 
-	if err := execFrontCmd.Start(); err != nil {
-		log.Fatal("Error:", err)
-	}
+	must(execBackCmd.Start())
 
-	err := execBackCmd.Wait()
-	if err != nil {
-		log.Fatal("Error:", err)
-	}
-	err = execFrontCmd.Wait()
-	if err != nil {
-		log.Fatal("Error:", err)
-	}
+	must(execFrontCmd.Start())
+
+	must(execBackCmd.Wait())
+
+	must(execFrontCmd.Wait())
 
 	return nil
 
@@ -116,6 +103,7 @@ var newCmd = &cobra.Command{
 			fmt.Println("")
 			return
 		}
+
 		var projectName string
 		fmt.Print("Project Name: ")
 		if _, err := fmt.Scanf("%s", &projectName); err != nil {
@@ -134,15 +122,13 @@ var newCmd = &cobra.Command{
 		}
 
 		err = cloneProject(projectName)
-		if err != nil {
-			log.Fatal(err)
-		}
+		must(err)
 
 		err = changeDirectory(projectName)
-		if err != nil {
-			log.Fatal(err)
-		}
+		must(err)
+
 		err = installRequirments(packageManager)
+		must(err)
 
 	},
 }
