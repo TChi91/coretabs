@@ -9,7 +9,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/janeczku/go-spinner"
+	"github.com/TChi91/go-spinner"
 	"github.com/spf13/cobra"
 )
 
@@ -125,7 +125,6 @@ var newCmd = &cobra.Command{
 		}
 		fmt.Println("This may take some while ...")
 		s := spinner.StartNew("cloning project ...")
-		s.SetCharset([]string{"⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"})
 		err = cloneProject(projectName)
 		must(err)
 		s.Stop()
@@ -135,13 +134,12 @@ var newCmd = &cobra.Command{
 		must(err)
 
 		s = spinner.StartNew("Installing Dependencies ...")
-		s.SetCharset([]string{"⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"})
 		err = installRequirments(packageManager)
 		must(err)
 		s.Stop()
 		fmt.Println("✓ Installing Dependencies: Completed")
 
-		fmt.Println("All Done ✓")
+		fmt.Println("✓ All Done")
 
 	},
 }
