@@ -18,7 +18,8 @@ const (
 )
 
 var (
-	pathsNeeded = []string{"git", "pip3"}
+	pathsNeeded = []string{"git", "python3"}
+	pkgManager  = []string{"npm", "yarn"}
 )
 
 func init() {
@@ -33,14 +34,25 @@ func must(err error) {
 
 func checkPaths() (map[string]error, error) {
 	missing := make(map[string]error)
+	pkgManagerMissing := make(map[string]error)
+
 	for _, path := range pathsNeeded {
 		_, err := exec.LookPath(path)
 		if err != nil {
 			missing[path] = err
 		}
 	}
+	for _, path := range pkgManager {
+		_, err := exec.LookPath(path)
+		if err != nil {
+			pkgManagerMissing[path] = err
+		}
+	}
+	if len(pkgManagerMissing) > 1 {
+		missing["package manager"] = errors.New("install Yarn or NPM")
+	}
 	if len(missing) != 0 {
-		return missing, errors.New("missing dependeties")
+		return missing, errors.New("Missing Dependencies")
 	}
 	return nil, nil
 
@@ -121,8 +133,14 @@ var newCmd = &cobra.Command{
 		packageManager = strings.TrimSuffix(packageManager, "\n")
 
 		if packageManager != "npm" {
-			packageManager = "yarn"
+			_, err := exec.LookPath("yarn")
+			if err != nil {
+				log.Fatal("Must install yarn or npm.")
+			} else {
+				packageManager = "yarn"
+			}
 		}
+
 		fmt.Println("This may take some while ...")
 		s := spinner.StartNew("cloning project ...")
 		err = cloneProject(projectName)
