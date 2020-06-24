@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/janeczku/go-spinner"
 	"github.com/spf13/cobra"
