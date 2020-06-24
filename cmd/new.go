@@ -117,6 +117,7 @@ var newCmd = &cobra.Command{
 
 		reader := bufio.NewReader(os.Stdin)
 		packageManager, _ = reader.ReadString('\n')
+		packageManager = strings.TrimSuffix(packageManager, "\n")
 
 		if packageManager != "npm" {
 			packageManager = "yarn"
