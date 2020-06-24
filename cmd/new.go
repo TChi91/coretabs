@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/janeczku/go-spinner"
 	"github.com/spf13/cobra"
 )
 
@@ -45,11 +46,11 @@ func checkPaths() (map[string]error, error) {
 }
 
 func cloneProject(projectName string) error {
-	fmt.Println("cloning project started ....")
+	// fmt.Println("cloning project started ....")
 	command := exec.Command("git", "clone", repo, projectName)
 
-	command.Stdout = os.Stdout
-	command.Stderr = os.Stderr
+	// command.Stdout = os.Stdout
+	// command.Stderr = os.Stderr
 
 	err := command.Run()
 	must(err)
@@ -64,7 +65,7 @@ func changeDirectory(dir string) error {
 }
 
 func installRequirments(packageManager string) error {
-	fmt.Println("starting virtual env ....")
+	// fmt.Println("starting virtual env ....")
 
 	frontCmd := fmt.Sprintf("%v install; %v run build", packageManager, packageManager)
 	backCmd := fmt.Sprint("python3 -m venv venv; source venv/bin/activate; pip install -r requirements.txt; python manage.py migrate")
@@ -72,11 +73,11 @@ func installRequirments(packageManager string) error {
 	execBackCmd := exec.Command("bash", "-c", backCmd)
 	execFrontCmd := exec.Command("bash", "-c", frontCmd)
 
-	execFrontCmd.Stdout = os.Stdout
-	execFrontCmd.Stderr = os.Stderr
+	// execFrontCmd.Stdout = os.Stdout
+	// execFrontCmd.Stderr = os.Stderr
 
-	execBackCmd.Stdout = os.Stdout
-	execBackCmd.Stderr = os.Stderr
+	// execBackCmd.Stdout = os.Stdout
+	// execBackCmd.Stderr = os.Stderr
 
 	must(execBackCmd.Start())
 
@@ -120,15 +121,25 @@ var newCmd = &cobra.Command{
 		if packageManager != "npm" {
 			packageManager = "yarn"
 		}
-
+		fmt.Println("This may take some while ...")
+		s := spinner.StartNew("cloning project ...")
+		s.SetCharset([]string{"⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"})
 		err = cloneProject(projectName)
 		must(err)
+		s.Stop()
+		fmt.Println("✓ Cloning: Completed")
 
 		err = changeDirectory(projectName)
 		must(err)
 
+		s = spinner.StartNew("Installing Dependencies ...")
+		s.SetCharset([]string{"⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"})
 		err = installRequirments(packageManager)
 		must(err)
+		s.Stop()
+		fmt.Println("✓ Installing Dependencies: Completed")
+
+		fmt.Println("All Done ✓")
 
 	},
 }
