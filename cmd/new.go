@@ -26,6 +26,68 @@ func init() {
 	rootCmd.AddCommand(newCmd)
 }
 
+var newCmd = &cobra.Command{
+	Use:   "new",
+	Short: "create new project",
+	Long:  `with new you can create new project`,
+	Run: func(cmd *cobra.Command, args []string) {
+		missing, err := checkPaths()
+		if err != nil {
+			for key, value := range missing {
+				fmt.Println(key, ":", value)
+			}
+			fmt.Println("")
+			return
+		}
+
+		var projectName string
+		fmt.Print("Project Name: ")
+		if _, err := fmt.Scanf("%s", &projectName); err != nil {
+			fmt.Printf("%s\n", err)
+			return
+		}
+		fmt.Print("What package manager you want to use?\nyarn or npm (default npm): ")
+
+		var packageManager string
+
+		reader := bufio.NewReader(os.Stdin)
+		packageManager, _ = reader.ReadString('\n')
+		packageManager = strings.TrimSuffix(packageManager, "\n")
+
+		checkNodePackageManager(&packageManager)
+
+		fmt.Println("This may take some while ...")
+		s := spinner.StartNew("cloning project ...")
+		err = cloneProject(projectName)
+		must(err)
+		s.Stop()
+		fmt.Println("✓ Cloning: Completed")
+
+		err = changeDirectory(projectName)
+		must(err)
+
+		s = spinner.StartNew("Installing Dependencies ...")
+		err = installRequirments(packageManager)
+		must(err)
+		s.Stop()
+		fmt.Println("✓ Installing Dependencies: Completed")
+
+		fmt.Println("✓ All Done")
+
+	},
+}
+
+func checkNodePackageManager(pm *string) {
+	if *pm != "npm" && *pm != "yarn" {
+		_, err := exec.LookPath("npm")
+		if err != nil {
+			log.Fatal("Must install yarn or npm.")
+		} else {
+			*pm = "npm"
+		}
+	}
+}
+
 func must(err error) {
 	if err != nil {
 		log.Fatal(err)
@@ -102,66 +164,4 @@ func installRequirments(packageManager string) error {
 
 	return nil
 
-}
-
-var newCmd = &cobra.Command{
-	Use:   "new",
-	Short: "create new project",
-	Long:  `with new you can create new project`,
-	Run: func(cmd *cobra.Command, args []string) {
-		missing, err := checkPaths()
-		if err != nil {
-			for key, value := range missing {
-				fmt.Println(key, ":", value)
-			}
-			fmt.Println("")
-			return
-		}
-
-		var projectName string
-		fmt.Print("Project Name: ")
-		if _, err := fmt.Scanf("%s", &projectName); err != nil {
-			fmt.Printf("%s\n", err)
-			return
-		}
-		fmt.Print("What package manager you want to use?\nyarn or npm (default npm): ")
-
-		var packageManager string
-
-		reader := bufio.NewReader(os.Stdin)
-		packageManager, _ = reader.ReadString('\n')
-		packageManager = strings.TrimSuffix(packageManager, "\n")
-
-		checkNodePackageManager(&packageManager)
-
-		fmt.Println("This may take some while ...")
-		s := spinner.StartNew("cloning project ...")
-		err = cloneProject(projectName)
-		must(err)
-		s.Stop()
-		fmt.Println("✓ Cloning: Completed")
-
-		err = changeDirectory(projectName)
-		must(err)
-
-		s = spinner.StartNew("Installing Dependencies ...")
-		err = installRequirments(packageManager)
-		must(err)
-		s.Stop()
-		fmt.Println("✓ Installing Dependencies: Completed")
-
-		fmt.Println("✓ All Done")
-
-	},
-}
-
-func checkNodePackageManager(pm *string) {
-	if *pm != "npm" && *pm != "yarn" {
-		_, err := exec.LookPath("npm")
-		if err != nil {
-			log.Fatal("Must install yarn or npm.")
-		} else {
-			*pm = "npm"
-		}
-	}
 }
