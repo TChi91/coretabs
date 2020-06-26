@@ -132,14 +132,7 @@ var newCmd = &cobra.Command{
 		packageManager, _ = reader.ReadString('\n')
 		packageManager = strings.TrimSuffix(packageManager, "\n")
 
-		if packageManager != "npm" && packageManager != "yarn" {
-			_, err := exec.LookPath("npm")
-			if err != nil {
-				log.Fatal("Must install yarn or npm.")
-			} else {
-				packageManager = "npm"
-			}
-		}
+		checkNodePackageManager(&packageManager)
 
 		fmt.Println("This may take some while ...")
 		s := spinner.StartNew("cloning project ...")
@@ -160,4 +153,15 @@ var newCmd = &cobra.Command{
 		fmt.Println("✓ All Done")
 
 	},
+}
+
+func checkNodePackageManager(pm *string) {
+	if *pm != "npm" && *pm != "yarn" {
+		_, err := exec.LookPath("npm")
+		if err != nil {
+			log.Fatal("Must install yarn or npm.")
+		} else {
+			*pm = "npm"
+		}
+	}
 }
