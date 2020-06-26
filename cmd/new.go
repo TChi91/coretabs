@@ -124,7 +124,7 @@ var newCmd = &cobra.Command{
 			fmt.Printf("%s\n", err)
 			return
 		}
-		fmt.Print("What package manager you want to use?\nyarn or npm (default yarn): ")
+		fmt.Print("What package manager you want to use?\nyarn or npm (default npm): ")
 
 		var packageManager string
 
@@ -132,12 +132,12 @@ var newCmd = &cobra.Command{
 		packageManager, _ = reader.ReadString('\n')
 		packageManager = strings.TrimSuffix(packageManager, "\n")
 
-		if packageManager != "npm" {
-			_, err := exec.LookPath("yarn")
+		if packageManager != "npm" && packageManager != "yarn" {
+			_, err := exec.LookPath("npm")
 			if err != nil {
 				log.Fatal("Must install yarn or npm.")
 			} else {
-				packageManager = "yarn"
+				packageManager = "npm"
 			}
 		}
 
