@@ -1,15 +1,12 @@
 package cmd
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
-	"strings"
 
-	"github.com/TChi91/go-spinner"
 	"github.com/spf13/cobra"
 )
 
@@ -18,8 +15,8 @@ const (
 )
 
 var (
-	pathsNeeded = []string{"git", "python3"}
-	pkgManager  = []string{"npm", "yarn"}
+	pathsNeeded = []string{"git", "python", "npm"}
+	// pkgManager  = []string{"npm", "yarn"}
 )
 
 func init() {
@@ -46,47 +43,49 @@ var newCmd = &cobra.Command{
 			fmt.Printf("%s\n", err)
 			return
 		}
-		fmt.Print("What package manager you want to use?\nyarn or npm (default npm): ")
+		// fmt.Print("What package manager you want to use?\nyarn or npm (default npm): ")
 
-		var packageManager string
+		// var packageManager string
 
-		reader := bufio.NewReader(os.Stdin)
-		packageManager, _ = reader.ReadString('\n')
-		packageManager = strings.TrimSuffix(packageManager, "\n")
+		// reader := bufio.NewReader(os.Stdin)
+		// packageManager, _ = reader.ReadString('\n')
+		// packageManager = strings.TrimSuffix(packageManager, "\n")
 
-		checkNodePackageManager(&packageManager)
+		// checkNodePackageManager(&packageManager)
 
 		fmt.Println("This may take some while ...")
-		s := spinner.StartNew("cloning project ...")
+		// s := spinner.StartNew("cloning project ...")
 		err = cloneProject(projectName)
 		must(err)
-		s.Stop()
-		fmt.Println("✓ Cloning: Completed")
+		// s.Stop()
+		// fmt.Println("✓ Cloning: Completed")
 
 		err = changeDirectory(projectName)
 		must(err)
 
-		s = spinner.StartNew("Installing Dependencies ...")
-		err = installRequirments(packageManager)
+		// s = spinner.StartNew("Installing Dependencies ...")
+		err = installRequirmentsWindows("npm")
 		must(err)
-		s.Stop()
-		fmt.Println("✓ Installing Dependencies: Completed")
+		// s.Stop()
+		// fmt.Println("✓ Installing Dependencies: Completed")
 
+		fmt.Println("")
+		fmt.Println("")
 		fmt.Println("✓ All Done")
 
 	},
 }
 
-func checkNodePackageManager(pm *string) {
-	if *pm != "npm" && *pm != "yarn" {
-		_, err := exec.LookPath("npm")
-		if err != nil {
-			log.Fatal("Must install yarn or npm.")
-		} else {
-			*pm = "npm"
-		}
-	}
-}
+// func checkNodePackageManager(pm *string) {
+// 	if *pm != "npm" && *pm != "yarn" {
+// 		_, err := exec.LookPath("npm")
+// 		if err != nil {
+// 			log.Fatal("Must install yarn or npm.")
+// 		} else {
+// 			*pm = "npm"
+// 		}
+// 	}
+// }
 
 func must(err error) {
 	if err != nil {
@@ -96,7 +95,7 @@ func must(err error) {
 
 func checkPaths() (map[string]error, error) {
 	missing := make(map[string]error)
-	pkgManagerMissing := make(map[string]error)
+	// pkgManagerMissing := make(map[string]error)
 
 	for _, path := range pathsNeeded {
 		_, err := exec.LookPath(path)
@@ -104,15 +103,16 @@ func checkPaths() (map[string]error, error) {
 			missing[path] = err
 		}
 	}
-	for _, path := range pkgManager {
-		_, err := exec.LookPath(path)
-		if err != nil {
-			pkgManagerMissing[path] = err
-		}
-	}
-	if len(pkgManagerMissing) > 1 {
-		missing["package manager"] = errors.New("install Yarn or NPM")
-	}
+	// for _, path := range pkgManager {
+	// 	_, err := exec.LookPath(path)
+	// 	if err != nil {
+	// 		pkgManagerMissing[path] = err
+	// 	}
+	// }
+	// if len(pkgManagerMissing) > 1 {
+	// 	missing["package manager"] = errors.New("install Yarn or NPM")
+	// }
+
 	if len(missing) != 0 {
 		return missing, errors.New("Missing Dependencies")
 	}
@@ -121,11 +121,10 @@ func checkPaths() (map[string]error, error) {
 }
 
 func cloneProject(projectName string) error {
-	// fmt.Println("cloning project started ....")
 	command := exec.Command("git", "clone", repo, projectName)
 
-	// command.Stdout = os.Stdout
-	// command.Stderr = os.Stderr
+	command.Stdout = os.Stdout
+	command.Stderr = os.Stderr
 
 	err := command.Run()
 	must(err)
@@ -143,16 +142,43 @@ func installRequirments(packageManager string) error {
 	// fmt.Println("starting virtual env ....")
 
 	frontCmd := fmt.Sprintf("%v install; %v run build", packageManager, packageManager)
-	backCmd := fmt.Sprint("python3 -m venv venv; source venv/bin/activate; pip install -r requirements.txt; python manage.py migrate")
+	backCmd := fmt.Sprint("python -m venv venv; source venv/bin/activate; pip install -r requirements.txt; python manage.py migrate")
 
-	execBackCmd := exec.Command("bash", "-c", backCmd)
-	execFrontCmd := exec.Command("bash", "-c", frontCmd)
+	execBackCmd := exec.Command("cmd", "/C", backCmd)
+	execFrontCmd := exec.Command("cmd", "/C", frontCmd)
 
 	// execFrontCmd.Stdout = os.Stdout
 	// execFrontCmd.Stderr = os.Stderr
 
 	// execBackCmd.Stdout = os.Stdout
 	// execBackCmd.Stderr = os.Stderr
+
+	must(execBackCmd.Start())
+
+	must(execFrontCmd.Start())
+
+	must(execBackCmd.Wait())
+
+	must(execFrontCmd.Wait())
+
+	return nil
+
+}
+
+func installRequirmentsWindows(packageManager string) error {
+	// fmt.Println("starting virtual env ....")
+
+	frontCmd := fmt.Sprintf("%v install && %v run build", packageManager, packageManager)
+	backCmd := fmt.Sprint("pip install virtualenv && python -m venv venv && .\\venv\\Scripts\\activate && pip install -r requirements.txt && python manage.py migrate")
+
+	execBackCmd := exec.Command("cmd", "/C", backCmd)
+	execFrontCmd := exec.Command("cmd", "/C", frontCmd)
+
+	execFrontCmd.Stdout = os.Stdout
+	execFrontCmd.Stderr = os.Stderr
+
+	execBackCmd.Stdout = os.Stdout
+	execBackCmd.Stderr = os.Stderr
 
 	must(execBackCmd.Start())
 

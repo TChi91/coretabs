@@ -10,10 +10,10 @@ import (
 func main() {
 	os := runtime.GOOS
 	switch os {
-	case "linux":
+	case "windows":
 		cmd.Execute()
 	default:
-		fmt.Print("We support only linux OS\nTry later")
+		fmt.Print("We currently support only Windows OS\nTry later")
 	}
 
 }
