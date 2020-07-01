@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"runtime"
 
 	"github.com/spf13/cobra"
 )
@@ -15,8 +16,8 @@ const (
 )
 
 var (
-	pathsNeeded = []string{"git", "python", "npm"}
-	// pkgManager  = []string{"npm", "yarn"}
+	pathsNeeded        = []string{"git", "python3", "npm"}
+	pathsNeededWindows = []string{"git", "python", "npm", "pip"}
 )
 
 func init() {
@@ -64,7 +65,13 @@ var newCmd = &cobra.Command{
 		must(err)
 
 		// s = spinner.StartNew("Installing Dependencies ...")
-		err = installRequirmentsWindows("npm")
+		opsys := runtime.GOOS
+		switch opsys {
+		case "windows":
+			err = installRequirmentsWindows("npm")
+		case "linux":
+			err = installRequirments("npm")
+		}
 		must(err)
 		// s.Stop()
 		// fmt.Println("✓ Installing Dependencies: Completed")
@@ -96,11 +103,23 @@ func must(err error) {
 func checkPaths() (map[string]error, error) {
 	missing := make(map[string]error)
 	// pkgManagerMissing := make(map[string]error)
-
-	for _, path := range pathsNeeded {
-		_, err := exec.LookPath(path)
-		if err != nil {
-			missing[path] = err
+	opsys := runtime.GOOS
+	switch opsys {
+	case "windows":
+		// paths := pathsNeededWindows
+		for _, path := range pathsNeededWindows {
+			_, err := exec.LookPath(path)
+			if err != nil {
+				missing[path] = err
+			}
+		}
+	case "linux":
+		// paths := pathsNeeded
+		for _, path := range pathsNeeded {
+			_, err := exec.LookPath(path)
+			if err != nil {
+				missing[path] = err
+			}
 		}
 	}
 	// for _, path := range pkgManager {
@@ -141,17 +160,17 @@ func changeDirectory(dir string) error {
 func installRequirments(packageManager string) error {
 	// fmt.Println("starting virtual env ....")
 
-	frontCmd := fmt.Sprintf("%v install; %v run build", packageManager, packageManager)
-	backCmd := fmt.Sprint("python -m venv venv; source venv/bin/activate; pip install -r requirements.txt; python manage.py migrate")
+	frontCmd := fmt.Sprintf("sudo %v install; sudo %v run build", packageManager, packageManager)
+	backCmd := fmt.Sprint("python3 -m venv venv; source venv/bin/activate; pip install -r requirements.txt; python manage.py migrate")
 
-	execBackCmd := exec.Command("cmd", "/C", backCmd)
-	execFrontCmd := exec.Command("cmd", "/C", frontCmd)
+	execBackCmd := exec.Command("bash", "-c", backCmd)
+	execFrontCmd := exec.Command("bash", "-c", frontCmd)
 
-	// execFrontCmd.Stdout = os.Stdout
-	// execFrontCmd.Stderr = os.Stderr
+	execFrontCmd.Stdout = os.Stdout
+	execFrontCmd.Stderr = os.Stderr
 
-	// execBackCmd.Stdout = os.Stdout
-	// execBackCmd.Stderr = os.Stderr
+	execBackCmd.Stdout = os.Stdout
+	execBackCmd.Stderr = os.Stderr
 
 	must(execBackCmd.Start())
 
@@ -166,7 +185,6 @@ func installRequirments(packageManager string) error {
 }
 
 func installRequirmentsWindows(packageManager string) error {
-	// fmt.Println("starting virtual env ....")
 
 	frontCmd := fmt.Sprintf("%v install && %v run build", packageManager, packageManager)
 	backCmd := fmt.Sprint("pip install virtualenv && python -m venv venv && .\\venv\\Scripts\\activate && pip install -r requirements.txt && python manage.py migrate")
