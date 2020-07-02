@@ -162,22 +162,27 @@ func installRequirments(packageManager string) error {
 
 	frontCmd := fmt.Sprintf("%v install; %v run build", packageManager, packageManager)
 	backCmd := fmt.Sprint("python3 -m venv venv; source venv/bin/activate; pip install -r requirements.txt; python manage.py migrate")
+	GitInit := fmt.Sprintf("rm -rf .git; git init") // commands to add: ; git add .; git commit -m \"Initial commit\"
 
+	execGitInit := exec.Command("bash", "-c", GitInit)
 	execBackCmd := exec.Command("bash", "-c", backCmd)
 	execFrontCmd := exec.Command("bash", "-c", frontCmd)
 
 	execFrontCmd.Stdout = os.Stdout
 	execFrontCmd.Stderr = os.Stderr
 
+	execGitInit.Stdout = os.Stdout
+	execGitInit.Stderr = os.Stderr
+
 	execBackCmd.Stdout = os.Stdout
 	execBackCmd.Stderr = os.Stderr
 
+	must(execGitInit.Start())
 	must(execBackCmd.Start())
-
 	must(execFrontCmd.Start())
 
+	must(execGitInit.Wait())
 	must(execBackCmd.Wait())
-
 	must(execFrontCmd.Wait())
 
 	return nil
