@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/TChi91/coretabs/cmd"
+	"github.com/coretabs/coretabs/cmd"
 )
 
 func main() {
