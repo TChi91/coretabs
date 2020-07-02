@@ -160,7 +160,7 @@ func changeDirectory(dir string) error {
 func installRequirments(packageManager string) error {
 	// fmt.Println("starting virtual env ....")
 
-	frontCmd := fmt.Sprintf("sudo %v install; sudo %v run build", packageManager, packageManager)
+	frontCmd := fmt.Sprintf("%v install; %v run build", packageManager, packageManager)
 	backCmd := fmt.Sprint("python3 -m venv venv; source venv/bin/activate; pip install -r requirements.txt; python manage.py migrate")
 
 	execBackCmd := exec.Command("bash", "-c", backCmd)
