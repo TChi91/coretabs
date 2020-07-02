@@ -44,27 +44,14 @@ var newCmd = &cobra.Command{
 			fmt.Printf("%s\n", err)
 			return
 		}
-		// fmt.Print("What package manager you want to use?\nyarn or npm (default npm): ")
-
-		// var packageManager string
-
-		// reader := bufio.NewReader(os.Stdin)
-		// packageManager, _ = reader.ReadString('\n')
-		// packageManager = strings.TrimSuffix(packageManager, "\n")
-
-		// checkNodePackageManager(&packageManager)
 
 		fmt.Println("This may take some while ...")
-		// s := spinner.StartNew("cloning project ...")
 		err = cloneProject(projectName)
 		must(err)
-		// s.Stop()
-		// fmt.Println("✓ Cloning: Completed")
 
 		err = changeDirectory(projectName)
 		must(err)
 
-		// s = spinner.StartNew("Installing Dependencies ...")
 		opsys := runtime.GOOS
 		switch opsys {
 		case "windows":
@@ -73,8 +60,6 @@ var newCmd = &cobra.Command{
 			err = installRequirments("npm")
 		}
 		must(err)
-		// s.Stop()
-		// fmt.Println("✓ Installing Dependencies: Completed")
 
 		fmt.Println("")
 		fmt.Println("")
@@ -82,17 +67,6 @@ var newCmd = &cobra.Command{
 
 	},
 }
-
-// func checkNodePackageManager(pm *string) {
-// 	if *pm != "npm" && *pm != "yarn" {
-// 		_, err := exec.LookPath("npm")
-// 		if err != nil {
-// 			log.Fatal("Must install yarn or npm.")
-// 		} else {
-// 			*pm = "npm"
-// 		}
-// 	}
-// }
 
 func must(err error) {
 	if err != nil {
@@ -102,11 +76,9 @@ func must(err error) {
 
 func checkPaths() (map[string]error, error) {
 	missing := make(map[string]error)
-	// pkgManagerMissing := make(map[string]error)
 	opsys := runtime.GOOS
 	switch opsys {
 	case "windows":
-		// paths := pathsNeededWindows
 		for _, path := range pathsNeededWindows {
 			_, err := exec.LookPath(path)
 			if err != nil {
@@ -114,7 +86,6 @@ func checkPaths() (map[string]error, error) {
 			}
 		}
 	case "linux":
-		// paths := pathsNeeded
 		for _, path := range pathsNeeded {
 			_, err := exec.LookPath(path)
 			if err != nil {
@@ -122,15 +93,6 @@ func checkPaths() (map[string]error, error) {
 			}
 		}
 	}
-	// for _, path := range pkgManager {
-	// 	_, err := exec.LookPath(path)
-	// 	if err != nil {
-	// 		pkgManagerMissing[path] = err
-	// 	}
-	// }
-	// if len(pkgManagerMissing) > 1 {
-	// 	missing["package manager"] = errors.New("install Yarn or NPM")
-	// }
 
 	if len(missing) != 0 {
 		return missing, errors.New("Missing Dependencies")
@@ -158,8 +120,6 @@ func changeDirectory(dir string) error {
 }
 
 func installRequirments(packageManager string) error {
-	// fmt.Println("starting virtual env ....")
-
 	frontCmd := fmt.Sprintf("%v install; %v run build", packageManager, packageManager)
 	backCmd := fmt.Sprint("python3 -m venv venv; source venv/bin/activate; pip install -r requirements.txt; python manage.py migrate")
 	GitInit := fmt.Sprintf("rm -rf .git; git init") // commands to add: ; git add .; git commit -m \"Initial commit\"
@@ -204,11 +164,9 @@ func installRequirmentsWindows(packageManager string) error {
 	execBackCmd.Stderr = os.Stderr
 
 	must(execBackCmd.Start())
-
 	must(execFrontCmd.Start())
 
 	must(execBackCmd.Wait())
-
 	must(execFrontCmd.Wait())
 
 	return nil
