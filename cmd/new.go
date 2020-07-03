@@ -8,6 +8,8 @@ import (
 	"os/exec"
 	"runtime"
 
+	homedir "github.com/mitchellh/go-homedir"
+
 	"github.com/spf13/cobra"
 )
 
@@ -60,9 +62,12 @@ var newCmd = &cobra.Command{
 			err = installRequirments("npm")
 		}
 		must(err)
+		fmt.Println("")
+		gitErrMsg := deleteCommitsHistory()
+		if gitErrMsg != nil {
+			fmt.Println(gitErrMsg)
+		}
 
-		fmt.Println("")
-		fmt.Println("")
 		fmt.Println("✓ All Done")
 
 	},
@@ -122,26 +127,19 @@ func changeDirectory(dir string) error {
 func installRequirments(packageManager string) error {
 	frontCmd := fmt.Sprintf("%v install; %v run build", packageManager, packageManager)
 	backCmd := fmt.Sprint("python3 -m venv venv; source venv/bin/activate; pip install -r requirements.txt; python manage.py migrate")
-	GitInit := fmt.Sprintf("rm -rf .git; git init") // commands to add: ; git add .; git commit -m \"Initial commit\"
 
-	execGitInit := exec.Command("bash", "-c", GitInit)
 	execBackCmd := exec.Command("bash", "-c", backCmd)
 	execFrontCmd := exec.Command("bash", "-c", frontCmd)
 
 	execFrontCmd.Stdout = os.Stdout
 	execFrontCmd.Stderr = os.Stderr
 
-	execGitInit.Stdout = os.Stdout
-	execGitInit.Stderr = os.Stderr
-
 	execBackCmd.Stdout = os.Stdout
 	execBackCmd.Stderr = os.Stderr
 
-	must(execGitInit.Start())
 	must(execBackCmd.Start())
 	must(execFrontCmd.Start())
 
-	must(execGitInit.Wait())
 	must(execBackCmd.Wait())
 	must(execFrontCmd.Wait())
 
@@ -171,4 +169,43 @@ func installRequirmentsWindows(packageManager string) error {
 
 	return nil
 
+}
+
+func deleteCommitsHistory() error {
+	var GitInit string
+	var execGitInit *exec.Cmd
+	var errMsg error = nil
+	var gitConfigFilePath string
+
+	switch opsys := runtime.GOOS; opsys {
+	case "windows":
+		GitInit = fmt.Sprint(`RD /S /Q .git && git init && git add . && git commit -m "Init"`)
+		home, _ := homedir.Dir()
+		gitConfigFilePath = fmt.Sprint(home, "\\.gitconfig")
+		if _, err := os.Stat(gitConfigFilePath); os.IsNotExist(err) {
+			GitInit = fmt.Sprint("RD /S /Q .git && git init")
+			errMsg = errors.New(`# Setting Up User Name and Email Address
+			$ git config --global user.name "Your Name"
+			$ git config --global user.email Your@email.com`)
+		}
+		execGitInit = exec.Command("cmd", "/C", GitInit)
+
+	case "linux":
+		GitInit = fmt.Sprint(`rm -rf .git; git init; git add .; git commit -m "Init"`)
+		home, _ := homedir.Dir()
+		gitConfigFilePath = fmt.Sprint(home, "/.gitconfig")
+		if _, err := os.Stat(gitConfigFilePath); os.IsNotExist(err) {
+			GitInit = fmt.Sprint("rm -rf .git; git init")
+			errMsg = errors.New(`# Setting Up User Name and Email Address
+			$ git config --global user.name "Your Name"
+			$ git config --global user.email Your@email.com`)
+		}
+		execGitInit = exec.Command("bash", "-c", GitInit)
+	}
+
+	execGitInit.Stdout = os.Stdout
+	execGitInit.Stderr = os.Stderr
+	must(execGitInit.Start())
+	must(execGitInit.Wait())
+	return errMsg
 }
