@@ -1,6 +1,9 @@
 # coretabs-cli
 Start a new django-vuejs projects with minimum configurations.
 
+##### Django Vue Template you get: https://github.com/TChi91/rest-vue.
+##### Download the lastest version from here: https://github.com/coretabs/coretabs/releases/latest
+
 # Requirements:
 - For Windows OS:
 - - Python 3 + Pip, Nodejs + Npm, Git
@@ -8,5 +11,6 @@ Start a new django-vuejs projects with minimum configurations.
 - - Python 3 + python-venv + python-dev, Nodejs + Npm, Git
 
 # Commands:
-- coretabs new (Use sudo for Linux users)
+Run coretabs cli from Terminal(linux) or CMD(Windows).
+- coretabs new (coretabs.exe for windows).
 - coretabs version
