@@ -2,7 +2,7 @@
 Start a new django-vuejs projects with minimum configurations.
 
 ##### Django Vue Template you get: https://github.com/TChi91/rest-vue.
-##### Download the lastest version from here: https://github.com/coretabs/coretabs/releases/latest
+##### Download the lastest version from here: https://github.com/TChi91/coretabs/releases/latest
 
 # Requirements:
 - For Windows OS:
