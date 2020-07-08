@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -39,6 +40,13 @@ var newCmd = &cobra.Command{
 			fmt.Println("")
 			return
 		}
+
+		//Create coretabs folder in the Home directory if doesn't exist
+		wd, err := coretabsFolderIfNotExists()
+		must(err)
+
+		//change the working directory to §HOME/coretabs
+		os.Chdir(wd)
 
 		var projectName string
 		fmt.Print("Project Name: ")
@@ -208,4 +216,18 @@ func deleteCommitsHistory() error {
 	must(execGitInit.Start())
 	must(execGitInit.Wait())
 	return errMsg
+}
+
+//Create coretabs folder in the Home directory
+func coretabsFolderIfNotExists() (string, error) {
+	home, err := homedir.Dir()
+	if err != nil {
+		return "", err
+	}
+	coretabsPath := filepath.Join(home, "coretabs")
+
+	if _, err := os.Stat(coretabsPath); os.IsNotExist(err) {
+		os.MkdirAll(coretabsPath, os.ModePerm)
+	}
+	return coretabsPath, nil
 }
