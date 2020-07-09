@@ -4,6 +4,18 @@ Start a new django-vuejs projects with minimum configurations.
 ##### Django Vue Template you get: https://github.com/TChi91/rest-vue.
 ##### Download the lastest version from here: https://github.com/TChi91/coretabs/releases/latest
 
+# Installation:
+## Windows:
+Download installer from our github releases page: https://github.com/TChi91/coretabs/releases
+
+## Linux:
+To **install** Coretabs CLI, you should run the install script.
+To do that, you may either download and run the script manually, or use the following cURL or Wget command:
+
+```sh
+wget -qO- https://raw.githubusercontent.com/TChi91/coretabs/master/install.sh | bash
+```
+
 # New projects location?:
 All new projects created by coretabs lives in "coretabs" folder in the HOME directory.
 - /home/$USER/coretabs for Linux,
