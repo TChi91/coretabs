@@ -15,7 +15,8 @@ import (
 )
 
 const (
-	repo string = "https://github.com/TChi91/rest-vue"
+	djVue   string = "https://github.com/TChi91/rest-vue"
+	djReact string = "https://github.com/TChi91/drf-reactjs"
 )
 
 var (
@@ -55,8 +56,15 @@ var newCmd = &cobra.Command{
 			return
 		}
 
+		var repo string
+		fmt.Print(`Framework to use with DRF?
+"r" for ReactJS, or "v" for Vuejs: `)
+
+		fmt.Scanf("%s", &repo)
+		whichRepo(&repo)
+
 		fmt.Println("This may take some while ...")
-		err = cloneProject(projectName)
+		err = cloneProject(projectName, repo)
 		must(err)
 
 		err = changeDirectory(projectName)
@@ -114,7 +122,7 @@ func checkPaths() (map[string]error, error) {
 
 }
 
-func cloneProject(projectName string) error {
+func cloneProject(projectName, repo string) error {
 	command := exec.Command("git", "clone", repo, projectName)
 
 	command.Stdout = os.Stdout
@@ -230,4 +238,14 @@ func coretabsFolderIfNotExists() (string, error) {
 		os.MkdirAll(coretabsPath, os.ModePerm)
 	}
 	return coretabsPath, nil
+}
+
+//Choose what template to install
+func whichRepo(repo *string) {
+	switch *repo {
+	case "r", "react":
+		*repo = djReact
+	default:
+		*repo = djVue
+	}
 }
