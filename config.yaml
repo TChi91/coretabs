@@ -1,0 +1,8 @@
+frontend:
+  port: 3000
+  server: npm run serve
+  package-manager: npm
+
+backend:
+  port: 8000
+  server: python manage.py runserver
