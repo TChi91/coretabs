@@ -10,10 +10,6 @@ import (
 )
 
 var (
-	// Used for flags.
-	cfgFile     string
-	userLicense string
-
 	// This represents the base command when called
 	// without any subcommands
 
@@ -41,24 +37,26 @@ func er(msg interface{}) {
 }
 
 func initConfig() {
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		if err != nil {
-			er(err)
-		}
 
-		// Search config in home directory with name ".cobra" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".cobra")
+	// Find home directory.
+	home, err := homedir.Dir()
+	if err != nil {
+		er(err)
 	}
+
+	// Search config in home directory with name ".cobra" (without extension).
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+
+	viper.AddConfigPath(home + "/.coretabs/")
 
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
+
+	// if err := viper.ReadInConfig(); err != nil {
+	// 	fmt.Println(err)
+	// }
 }
