@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var (
@@ -39,22 +37,22 @@ func er(msg interface{}) {
 func initConfig() {
 
 	// Find home directory.
-	home, err := homedir.Dir()
-	if err != nil {
-		er(err)
-	}
+	// home, err := homedir.Dir()
+	// if err != nil {
+	// 	er(err)
+	// }
 
 	// Search config in home directory with name ".cobra" (without extension).
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
+	// viper.SetConfigName("config")
+	// viper.SetConfigType("yaml")
 
-	viper.AddConfigPath(home + "/.coretabs/")
+	// viper.AddConfigPath(home + "/.coretabs/")
 
-	viper.AutomaticEnv()
+	// viper.AutomaticEnv()
 
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
-	}
+	// if err := viper.ReadInConfig(); err == nil {
+	// 	fmt.Println("Using config file:", viper.ConfigFileUsed())
+	// }
 
 	// if err := viper.ReadInConfig(); err != nil {
 	// 	fmt.Println(err)
