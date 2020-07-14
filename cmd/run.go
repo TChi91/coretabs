@@ -36,7 +36,7 @@ one command only: coretabs run.`,
 		}
 
 		var port int
-		fmt.Print(`Which port ypu want to use: `)
+		fmt.Print(`Which port you want to use: `)
 
 		switch server {
 		case 1:

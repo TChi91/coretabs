@@ -2,8 +2,8 @@ package config
 
 //AppConfig structure
 type AppConfig struct {
-	FrontEnd FrontEndConfiguration `yaml:"frontend"`
-	BackEnd  BackEndConfiguration  `yaml:"backend"`
+	FrontEnd FrontEndConfiguration `mapstructure:"frontend"`
+	BackEnd  BackEndConfiguration  `mapstructure:"backend"`
 }
 
 // NewConfig Creates new instance of AppConfig
