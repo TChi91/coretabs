@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 
@@ -81,6 +82,11 @@ func backEndServer(config config.AppConfig) error {
 
 	execBackCmd := exec.Command("bash", "-c", backCmd)
 
+	if runtime.GOOS == "windows" {
+		backCmd = fmt.Sprintf(".\\venv\\Scripts\\activate && python manage.py runserver %v", config.BackEnd.Port)
+		execBackCmd = exec.Command("cmd", "/C", backCmd)
+	}
+
 	execBackCmd.Stdout = os.Stdout
 	execBackCmd.Stderr = os.Stderr
 
@@ -94,37 +100,48 @@ func backEndServer(config config.AppConfig) error {
 
 func frontEndServer(config config.AppConfig) error {
 	frontCmd := fmt.Sprintf("npm run serve -- --port %v", config.FrontEnd.Port)
+	var execfrontCmd *exec.Cmd
+	OS := runtime.GOOS
 
-	execfrontCmd := exec.Command("bash", "-c", frontCmd)
+	switch OS {
+	case "windows":
+		execfrontCmd = exec.Command("cmd", "/C", frontCmd)
+	case "linux":
+		execfrontCmd = exec.Command("bash", "-c", frontCmd)
+	}
 
 	execfrontCmd.Stdout = os.Stdout
 	execfrontCmd.Stderr = os.Stderr
 
 	err := execfrontCmd.Start()
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
 	err = execfrontCmd.Wait()
 	if err != nil {
-		fmt.Println(err)
+		return err
+
 	}
 	return nil
 
 }
 
 func readPort(port *int) (int, error) {
-	// if _, err := fmt.Scanf("%d", port); err != nil {
-	// 	fmt.Printf("%s\n", err)
-	// 	return err
-	// }
-	// return nil
+	var input string
+	var err error
 
 	reader := bufio.NewReader(os.Stdin)
-	input, err := reader.ReadString('\n')
+
+	if runtime.GOOS == "windows" {
+		input, err = reader.ReadString('\r')
+	} else {
+		input, err = reader.ReadString('\n')
+
+	}
 	if err != nil {
 		fmt.Println(err)
 	}
-	input = strings.TrimSuffix(input, "\n")
+	input = strings.Trim(input, "\r\n")
 	if input == "" {
 		input = "0"
 	}
