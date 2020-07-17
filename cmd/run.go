@@ -37,11 +37,16 @@ one command only: coretabs run.`,
 		}
 
 		var port int
-		fmt.Print(`Which port you want to use: `)
 
 		switch server {
 		case 1:
-			fmt.Print(`Default is 8080: `)
+			err := checkFileToRunWith("package.json")
+			if err != nil {
+				return
+			}
+
+			fmt.Print(`Which port you want to use, (8080): `)
+
 			inputPort, err := readPort(&port)
 			if err != nil {
 				return
@@ -55,7 +60,13 @@ one command only: coretabs run.`,
 			}
 
 		case 2:
-			fmt.Print(`Default is 8000: `)
+			err := checkFileToRunWith("manage.py")
+			if err != nil {
+				return
+			}
+
+			fmt.Print(`Which port you want to use, (8000): `)
+
 			inputPort, err := readPort(&port)
 			if err != nil {
 				return
@@ -151,4 +162,13 @@ func readPort(port *int) (int, error) {
 	}
 
 	return *port, nil
+}
+
+func checkFileToRunWith(name string) error {
+	if _, err := os.Stat(name); os.IsNotExist(err) {
+		err = fmt.Errorf("File not found: %v", name)
+		fmt.Println(err)
+		return err
+	}
+	return nil
 }
