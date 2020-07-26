@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"log"
@@ -8,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	homedir "github.com/mitchellh/go-homedir"
 
@@ -60,7 +62,8 @@ var newCmd = &cobra.Command{
 		fmt.Print(`Framework to use with DRF?
 "r" for ReactJS, or "v" for Vuejs: `)
 
-		fmt.Scanf("%s", &repo)
+		// fmt.Scanf("%s", &repo)
+		repo, err = fef(&repo)
 		whichRepo(&repo)
 
 		fmt.Println("This may take some while ...")
@@ -248,4 +251,29 @@ func whichRepo(repo *string) {
 	default:
 		*repo = djVue
 	}
+}
+
+// fef stand for FrontEndFramework
+func fef(frontEndFramework *string) (string, error) {
+	var input string
+	var err error
+
+	reader := bufio.NewReader(os.Stdin)
+
+	if runtime.GOOS == "windows" {
+		input, err = reader.ReadString('\r')
+	} else {
+		input, err = reader.ReadString('\n')
+
+	}
+	if err != nil {
+		fmt.Println(err)
+	}
+	input = strings.Trim(input, "\r\n")
+	if input == "" {
+		input = "0"
+	}
+	*frontEndFramework = input
+
+	return *frontEndFramework, nil
 }

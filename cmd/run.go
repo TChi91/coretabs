@@ -123,15 +123,16 @@ func backEndServer(config config.AppConfig) error {
 
 func frontEndServer(config config.AppConfig) error {
 
-	frontCmd := fmt.Sprintf("PORT=%v npm run serve", config.FrontEnd.Port)
-
+	var frontCmd string
 	var execFrontCmd *exec.Cmd
 	OS := runtime.GOOS
 
 	switch OS {
 	case "windows":
+		frontCmd = fmt.Sprintf("set PORT=%v && npm run serve", config.FrontEnd.Port)
 		execFrontCmd = exec.Command("cmd", "/C", frontCmd)
 	case "linux":
+		frontCmd = fmt.Sprintf("PORT=%v npm run serve", config.FrontEnd.Port)
 		execFrontCmd = exec.Command("bash", "-c", frontCmd)
 	}
 
