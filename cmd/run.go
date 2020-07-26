@@ -54,9 +54,15 @@ one command only: coretabs run.`,
 
 			if inputPort != 0 {
 				config.FrontEnd.Port = port
-				frontEndServer(config)
+				err = frontEndServer(config)
+				if err != nil {
+					return
+				}
 			} else {
-				frontEndServer(config)
+				err = frontEndServer(config)
+				if err != nil {
+					return
+				}
 			}
 
 		case 2:
@@ -74,9 +80,15 @@ one command only: coretabs run.`,
 
 			if inputPort != 0 {
 				config.BackEnd.Port = port
-				backEndServer(config)
+				err = backEndServer(config)
+				if err != nil {
+					return
+				}
 			} else {
-				backEndServer(config)
+				err = backEndServer(config)
+				if err != nil {
+					return
+				}
 			}
 
 		}
@@ -110,25 +122,27 @@ func backEndServer(config config.AppConfig) error {
 }
 
 func frontEndServer(config config.AppConfig) error {
-	frontCmd := fmt.Sprintf("npm run serve -- --port %v", config.FrontEnd.Port)
-	var execfrontCmd *exec.Cmd
+
+	frontCmd := fmt.Sprintf("PORT=%v npm run serve", config.FrontEnd.Port)
+
+	var execFrontCmd *exec.Cmd
 	OS := runtime.GOOS
 
 	switch OS {
 	case "windows":
-		execfrontCmd = exec.Command("cmd", "/C", frontCmd)
+		execFrontCmd = exec.Command("cmd", "/C", frontCmd)
 	case "linux":
-		execfrontCmd = exec.Command("bash", "-c", frontCmd)
+		execFrontCmd = exec.Command("bash", "-c", frontCmd)
 	}
 
-	execfrontCmd.Stdout = os.Stdout
-	execfrontCmd.Stderr = os.Stderr
+	execFrontCmd.Stdout = os.Stdout
+	execFrontCmd.Stderr = os.Stderr
 
-	err := execfrontCmd.Start()
+	err := execFrontCmd.Start()
 	if err != nil {
 		return err
 	}
-	err = execfrontCmd.Wait()
+	err = execFrontCmd.Wait()
 	if err != nil {
 		return err
 
