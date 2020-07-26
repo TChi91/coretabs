@@ -5,7 +5,7 @@ coretabs_install_dir() {
 }
 
 coretabs_latest_version() {
-  echo "v0.0.2"
+  echo "v1.0.0"
 }
 
 download_url(){
